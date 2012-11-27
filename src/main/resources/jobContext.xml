@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/batch 
+                http://www.springframework.org/schema/batch/spring-batch-2.1.xsd">
+                                
+    <import resource="applicationContext.xml"/>
+    
+    <bean id="transactionManager" class="org.springframework.batch.support.transaction.ResourcelessTransactionManager"/>
+   
+    <bean id="jobRepository" class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+    </bean>
+    
+    <bean id="jobLauncher" class="org.springframework.batch.core.launch.support.SimpleJobLauncher" >
+        <property name="jobRepository" ref="jobRepository"/>
+    </bean>
+    
+    <batch:job id="firstJob">
+	    <batch:step id="firstStep" next="secondStep">
+			<batch:tasklet ref="firstTasklet"/>
+		</batch:step>
+		<batch:step id="secondStep" next="thirdStep" >
+			<batch:tasklet ref="secondTasklet"/>
+		</batch:step>
+		<batch:step id="thirdStep">
+			<batch:tasklet ref="thirdTasklet" />
+		</batch:step>
+	</batch:job>
+	
+	<batch:job id="secondJob">
+		<batch:step id="fourthStep">
+			<batch:tasklet ref="fourthTasklet" />
+	        <batch:next on="*" to="fifthStep" />
+	        <batch:next on="FAILED" to="failedStep" />
+	    </batch:step>
+	    <batch:step id="fifthStep">
+			<batch:tasklet ref="fifthTasklet" />
+		</batch:step>
+		<batch:step id="failedStep">
+			<batch:tasklet ref="failedStepTasklet" />
+		</batch:step>
+	</batch:job>
+	
+	<batch:job id="thirdJob">
+		<batch:step id="sixthStep">
+			<batch:tasklet ref="sixthTasklet" />
+	        <batch:next on="*" to="seventhStep" />
+	        <batch:next on="FAILED" to="eighthStep" />
+	    </batch:step>
+	    <batch:step id="seventhStep">
+			<batch:tasklet ref="failedStepTasklet" />
+		</batch:step>
+		<batch:step id="eighthStep">
+			<batch:tasklet ref="seventhTasklet" />
+		</batch:step>
+	</batch:job>
+	  
+</beans>
